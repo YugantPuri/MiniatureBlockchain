@@ -10,51 +10,24 @@ def ascii_to_binary(text):
 
 def preprocess(input_string):
     binary_output = ascii_to_binary(input_string)
-    
-    block_size = 512
-    block_array = []
-    
     message_length = len(binary_output)
-    num_blocks = int(math.ceil(message_length / block_size))
-    
-    pointer = 0
-    for i in range(num_blocks):
-        block = ""
-        for j in range(block_size):
-            if pointer < message_length:
-                block += binary_output[pointer]
-                pointer += 1
-            else:
-                break
-        block_array.append(block)
-    
-    last_block = block_array.pop()
-    last_block_length = len(last_block)
-    
-    last_block += '1'
-    last_block_length += 1
-    
-    zeros_to_add = 448 - (last_block_length % block_size)
-    
-    if zeros_to_add > 0:
-        for i in range(zeros_to_add):
-            last_block += '0'
-    else:
-        for i in range(block_size - last_block_length):
-            last_block += '0'
-        block_array.append(last_block)
-        
-        last_block = ""
-        for i in range(448):
-            last_block += '0'
-    
-    binary_length = format(message_length, 'b')
-    for i in range(64 - len(binary_length)):
-        last_block += '0'
-    last_block += binary_length
 
-    block_array.append(last_block)
-    
+    # Append '1' bit
+    binary_output += '1'
+
+    # Pad with zeros until length ≡ 448 mod 512
+    while (len(binary_output) % 512) != 448:
+        binary_output += '0'
+
+    # Append 64-bit big-endian message length
+    length_bits = format(message_length, '064b')
+    binary_output += length_bits
+
+    # Split into 512-bit blocks
+    block_array = []
+    for i in range(0, len(binary_output), 512):
+        block_array.append(binary_output[i:i+512])
+
     return block_array
 
 
@@ -81,6 +54,7 @@ def word_gen(block):
         res = left_rotate(res, 1)
         loop_words.append(res)
     return loop_words
+
 def sha1_gen(str):
     blocks = preprocess(str)
 
@@ -103,16 +77,16 @@ def sha1_gen(str):
 
         for i in range(80):
             if i <= 19:
-                f = (b & c) | (((~b) & 0xFFFFFFFF) & d)
+                f = ((b & c) | ((~b & 0xFFFFFFFF) & d)) & 0xFFFFFFFF
                 k = 0x5A827999
             elif i <= 39:
-                f = b ^ c ^ d
+                f = (b ^ c ^ d) & 0xFFFFFFFF
                 k = 0x6ED9EBA1
             elif i <= 59:
-                f = (b & c) | (b & d) | (c & d)
+                f = ((b & c) | (b & d) | (c & d)) & 0xFFFFFFFF
                 k = 0x8F1BBCDC
             else:
-                f = b ^ c ^ d
+                f = (b ^ c ^ d) & 0xFFFFFFFF
                 k = 0xCA62C1D6
 
             temp = (left_rotate(a, 5) + f + e + k + loop_words[i]) & 0xFFFFFFFF
@@ -141,3 +115,7 @@ def sha1_gen(str):
 def hash_gen(crypt):
     sha1 = sha1_gen(crypt)
     return sha1
+
+
+test_string = "Hello, World!!"
+print(hash_gen(test_string))

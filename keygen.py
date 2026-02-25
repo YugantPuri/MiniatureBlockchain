@@ -2,14 +2,13 @@ import random
 from sympy import isprime
 from math import gcd
 
-# --- Prime generation ---
 def generate_prime(bits):
     while True:
-        p = random.getrandbits(bits) | 1  # make sure it's odd
+        p = random.getrandbits(bits) | 1
         if isprime(p):
             return p
 
-# --- Modular inverse using Extended Euclidean Algorithm ---
+
 def mod_inverse(a, m):
     m0, x0, x1 = m, 0, 1
     while a > 1:
@@ -18,8 +17,8 @@ def mod_inverse(a, m):
         x0, x1 = x1 - q * x0, x0
     return x1 + m0 if x1 < 0 else x1
 
-# --- RSA Key Generation ---
-def generate_rsa_keys(bits=16):
+
+def key_gen(bits=64):
     p = generate_prime(bits)
     q = generate_prime(bits)
     while p == q:
@@ -32,36 +31,7 @@ def generate_rsa_keys(bits=16):
         e += 2
     
     d = mod_inverse(e, phi)
-    return (e, n), (d, n)  # public, private
+    return (e, n), (d, n)
 
-# --- Signing with private key ---
-def sign(message, private_key):
-    d, n = private_key
-    return pow(message, d, n)  # signature s = m^d mod n
-
-# --- Verifying signature with public key ---
-def verify(message, signature, public_key):
-    e, n = public_key
-    m_prime = pow(signature, e, n)  # m' = s^e mod n
-    return m_prime == message
-
-# --- Demo ---
-def main():
-    print("Generating RSA keys...")
-    pub, priv = generate_rsa_keys(bits=16)
-    print("Public Key:", pub)
-    print("Private Key:", priv)
-    
-    message = 42
-    print("\nOriginal Message:", message)
-    
-    # Sign the message
-    signature = sign(message, priv)
-    print("Signature:", signature)
-    
-    # Verify the signature
-    is_valid = verify(message, signature, pub)
-    print("Signature valid?", is_valid)
-
-if __name__ == "__main__":
-    main()
+# here to generate larger RSA keys, we can modify the key_gen function to generate keys of a larger bit size, such as 128 bits or 256 bits. This will allow us to use the full 160-bit hash without truncation. However, for demonstration purposes, truncating the hash to 64 bits is a simpler solution.
+# for larger keys, we can simply call key_gen with bits=128 or bits=256, which will generate larger primes and thus larger RSA keys. This will allow us to use the full 160-bit hash without truncation and maintain better security.
