@@ -39,15 +39,15 @@ def verify_sha1_signature_full(message, signature, public_key):
 
 
 
-message = "Hello, World!!"
-signature = sign_sha1_string_full(message, private_key)
-print(f"Message: {message}")
-print(f"Signature: {signature}")
-is_valid = verify_sha1_signature_full(message, signature, public_key)
-print(f"Signature valid: {is_valid}")
-# printing the keys for demonstration purposes
-print(f"Public Key: {public_key}")
-print(f"Private Key: {private_key}")
+# message = "Hello, World!!"
+# signature = sign_sha1_string_full(message, private_key)
+# print(f"Message: {message}")
+# print(f"Signature: {signature}")
+# is_valid = verify_sha1_signature_full(message, signature, public_key)
+# print(f"Signature valid: {is_valid}")
+# # printing the keys for demonstration purposes
+# print(f"Public Key: {public_key}")
+# print(f"Private Key: {private_key}")
 
 # lets take the full hash and not truncate it, make the remaining code work with the full hash instead of truncating it to 16 characters (64 bits)
 
